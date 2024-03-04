@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <iwlib.h>
 
-#define IFACE "wlo1"
+#define IFACE "wlan0"
 #define MAX_BUF_SIZE 1024
 
-int rx_bytes() {
+int bytes(char *tx_rx) {
     // Path to the rx_bytes file
     //const char *file_path = "/sys/class/net/wlo1/statistics/rx_bytes";
     char file_path[MAX_BUF_SIZE];
-    snprintf(file_path, MAX_BUF_SIZE, "/sys/class/net/%s/statistics/rx_bytes", IFACE);
+    snprintf(file_path, MAX_BUF_SIZE, "/sys/class/net/%s/statistics/%s_bytes", IFACE, tx_rx);
     
     // Open the file for reading
     int fd = open(file_path, O_RDONLY);
@@ -36,16 +36,16 @@ int rx_bytes() {
     close(fd);
 
     // Print the value of rx_bytes
-    printf("rx_bytes: %lld\n", rx_bytes);
+    printf("%s_bytes: %lld\n", tx_rx, rx_bytes);
 
     return 0;
 }
 
-int rx_packets() {
+int packets(char *tx_rx) {
     // Path to the rx_bytes file
     //const char *file_path = "/sys/class/net/wlo1/statistics/rx_bytes";
     char file_path[MAX_BUF_SIZE];
-    snprintf(file_path, MAX_BUF_SIZE, "/sys/class/net/%s/statistics/rx_packets", IFACE);
+    snprintf(file_path, MAX_BUF_SIZE, "/sys/class/net/%s/statistics/%s_packets", IFACE, tx_rx);
     
     // Open the file for reading
     int fd = open(file_path, O_RDONLY);
@@ -73,7 +73,7 @@ int rx_packets() {
     close(fd);
 
     // Print the value of rx_bytes
-    printf("rx_packets: %lld\n", rx_bytes);
+    printf("%s_packets: %lld\n", tx_rx, rx_bytes);
 
     return 0;
 }
@@ -115,11 +115,15 @@ int wireless_stats(){
 int main() {
     while(1){
         wireless_stats();
-        rx_bytes();
-        rx_packets();
+        bytes("tx");
+        packets("tx");
+        printf("\n");
+        bytes("rx");
+        packets("rx");
         printf("\n");
         sleep(1);
     }
     
     return 0;
 }
+
