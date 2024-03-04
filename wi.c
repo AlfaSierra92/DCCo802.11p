@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iwlib.h>
+#include <sys/wait.h>
 
 #define IFACE "wlan0"
 #define MAX_BUF_SIZE 1024
@@ -80,7 +81,6 @@ int packets(char *tx_rx) {
 
 int wireless_stats(){
     int sockfd;
-    struct wireless_info info;
     iwstats stats;
     iwrange range;
 
@@ -113,17 +113,31 @@ int wireless_stats(){
 }
 
 int main() {
+    int status;
     while(1){
-        wireless_stats();
+        //wireless_stats(); //non funziona su rockpi...
         bytes("tx");
         packets("tx");
         printf("\n");
         bytes("rx");
         packets("rx");
         printf("\n");
+        //int status = system("sudo iw wlan0 set txpower fixed 100");
+        //l'execl mi butta giù il programma quindi devo farlo eseguire su un processo child
+        int pid;
+        if ((pid=fork()) < 0){
+        	printf("Fork error!");
+		    exit(4);
+        }
+        if (pid == 0){
+            if (execl("/usr/sbin/iw", "iw", "wlan0", "set", "txpower", "fixed", "100", (char*) NULL) < 0) {
+                perror("error");
+            }
+        }
+        waitpid(pid, NULL, 0);
+        
         sleep(1);
     }
     
     return 0;
 }
-
